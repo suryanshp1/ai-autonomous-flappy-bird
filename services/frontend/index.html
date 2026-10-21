@@ -15,6 +15,19 @@
     <!-- Three.js Canvas Container -->
     <div id="canvas-container"></div>
 
+    <!-- Atmospheric Cyberpunk Scanline, Vignette & Tactical Cockpit Reticle -->
+    <div class="screen-fx-layer">
+      <div class="corner-bracket bracket-tl"></div>
+      <div class="corner-bracket bracket-tr"></div>
+      <div class="corner-bracket bracket-bl"></div>
+      <div class="corner-bracket bracket-br"></div>
+      <div id="cockpit-hud-overlay" class="cockpit-reticle hidden">
+        <div class="pitch-ladder ladder-top"></div>
+        <div class="crosshair-ring"></div>
+        <div class="pitch-ladder ladder-bottom"></div>
+      </div>
+    </div>
+
     <!-- HUD Overlay -->
     <div id="hud-overlay" class="hud-container">
       <!-- Top Bar: Brand, Scores & Tactical Controls -->
@@ -47,6 +60,9 @@
         </div>
 
         <div class="mode-control">
+          <button id="fx-toggle-btn" class="hud-pill-btn fx-active" title="Toggle HDR UnrealBloom Post-Processing (Press B)">
+            <span id="fx-toggle-text">FX: BLOOM</span>
+          </button>
           <button id="camera-mode-btn" class="hud-pill-btn" title="Cycle Camera View (Press C)">
             <span id="camera-mode-text">ISO CAM</span>
           </button>
@@ -128,8 +144,8 @@
               <span>Cycle Simulation Time-Scale (1x / 1.5x / 2x)</span>
             </div>
             <div class="control-row">
-              <kbd class="key-badge">T</kbd> / <kbd class="key-badge">S</kbd> / <kbd class="key-badge">R</kbd>
-              <span>Trajectory Line / Synth Audio / Instant Restart</span>
+              <kbd class="key-badge">T</kbd> / <kbd class="key-badge">B</kbd> / <kbd class="key-badge">S</kbd> / <kbd class="key-badge">R</kbd>
+              <span>Trajectory / HDR Bloom / Synth Audio / Restart</span>
             </div>
           </div>
           <button id="launch-btn" class="btn btn-primary btn-glow">ENGAGE ENGINES</button>

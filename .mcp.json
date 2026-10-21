@@ -1,0 +1,16 @@
+{
+  "mcpServers": {
+    "blender-mcp": {
+      "command": "uv",
+      "args": [
+        "--directory",
+        "/Users/surajpandey/Documents/jev-flappy-bird/tools/blender-mcp",
+        "run",
+        "blender-mcp-server"
+      ],
+      "env": {
+        "BLENDER_EXECUTABLE": "/Users/surajpandey/Documents/jev-flappy-bird/tools/Blender.app/Contents/MacOS/Blender"
+      }
+    }
+  }
+}

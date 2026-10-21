@@ -90,6 +90,12 @@ export class GameEngine {
         const muted = this.sound.toggleMute();
         this.hud.setAudioMuted(muted);
       },
+      onToggleFx: () => {
+        this.sound.playClick();
+        const fxOn = this.renderer.togglePostProcessing();
+        this.hud.setFxStatus(fxOn);
+        this.hud.showToast(fxOn ? 'HDR UNREAL BLOOM: ENABLED' : 'HDR UNREAL BLOOM: BYPASSED');
+      },
     });
 
     // Keyboard events
@@ -115,6 +121,10 @@ export class GameEngine {
         this.hud.setAudioMuted(muted);
       } else if (e.code === 'KeyT') {
         this.renderer.showTrajectory = !this.renderer.showTrajectory;
+      } else if (e.code === 'KeyB') {
+        const fxOn = this.renderer.togglePostProcessing();
+        this.hud.setFxStatus(fxOn);
+        this.hud.showToast(fxOn ? 'HDR UNREAL BLOOM: ENABLED' : 'HDR UNREAL BLOOM: BYPASSED');
       } else if (e.code === 'KeyR') {
         this.restartGame();
       }
@@ -302,9 +312,10 @@ export class GameEngine {
       );
 
       // 3. Check Collectible Plasma Orbs
-      this.physics.checkOrbCollisions(this.pipeManager.orbs, () => {
+      this.physics.checkOrbCollisions(this.pipeManager.orbs, (orb) => {
         this.physics.combo = Math.min(8, this.physics.combo + 1);
         this.physics.score += 2;
+        this.renderer.triggerOrbCollectBurst(orb.y, orb.z);
         this.sound.playOrbCollect();
         this.hud.showToast(`+2 PLASMA CORE COLLECTED (x${this.physics.combo})`);
         this.updateHighScores();

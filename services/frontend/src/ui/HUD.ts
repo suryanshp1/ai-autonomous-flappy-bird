@@ -17,6 +17,9 @@ export class HUD {
   private simSpeedTextEl: HTMLElement;
   private audioToggleBtn: HTMLElement;
   private audioToggleTextEl: HTMLElement;
+  private fxToggleBtn: HTMLElement | null;
+  private fxToggleTextEl: HTMLElement | null;
+  private cockpitOverlayEl: HTMLElement | null;
 
   // AI Telemetry elements
   private sourceBadge: HTMLElement;
@@ -73,6 +76,9 @@ export class HUD {
     this.simSpeedTextEl = document.getElementById('sim-speed-text')!;
     this.audioToggleBtn = document.getElementById('audio-toggle-btn')!;
     this.audioToggleTextEl = document.getElementById('audio-toggle-text')!;
+    this.fxToggleBtn = document.getElementById('fx-toggle-btn');
+    this.fxToggleTextEl = document.getElementById('fx-toggle-text');
+    this.cockpitOverlayEl = document.getElementById('cockpit-hud-overlay');
 
     this.sourceBadge = document.getElementById('decision-source-badge')!;
     this.confidenceCircle = document.getElementById('confidence-circle') as unknown as SVGCircleElement;
@@ -131,6 +137,22 @@ export class HUD {
 
   public setCameraLabel(label: string): void {
     this.cameraModeTextEl.innerText = label;
+    if (this.cockpitOverlayEl) {
+      if (label === 'FPV CAM' || label === 'CHASE CAM') {
+        this.cockpitOverlayEl.classList.remove('hidden');
+      } else {
+        this.cockpitOverlayEl.classList.add('hidden');
+      }
+    }
+  }
+
+  public setFxStatus(enabled: boolean): void {
+    if (this.fxToggleTextEl) {
+      this.fxToggleTextEl.innerText = enabled ? 'FX: BLOOM' : 'FX: RAW';
+    }
+    if (this.fxToggleBtn) {
+      this.fxToggleBtn.classList.toggle('fx-active', enabled);
+    }
   }
 
   public setSimSpeedLabel(speed: number): void {
@@ -275,6 +297,7 @@ export class HUD {
     onCycleCamera: () => void;
     onCycleSpeed: () => void;
     onToggleAudio: () => void;
+    onToggleFx?: () => void;
   }): void {
     this.launchBtn.addEventListener('click', handlers.onStart);
     this.restartBtn.addEventListener('click', handlers.onRestart);
@@ -282,6 +305,9 @@ export class HUD {
     this.cameraModeBtn.addEventListener('click', handlers.onCycleCamera);
     this.simSpeedBtn.addEventListener('click', handlers.onCycleSpeed);
     this.audioToggleBtn.addEventListener('click', handlers.onToggleAudio);
+    if (this.fxToggleBtn && handlers.onToggleFx) {
+      this.fxToggleBtn.addEventListener('click', handlers.onToggleFx);
+    }
   }
 
   public resetTelemetry(): void {

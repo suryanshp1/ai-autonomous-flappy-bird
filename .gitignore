@@ -1,13 +1,10 @@
 node_modules/
 dist/
-build/
-.cache/
+.venv/
 __pycache__/
 *.pyc
-*.pyo
-*.pyd
 .env
 .DS_Store
 *.log
-.venv/
-venv/
+tools/Blender.app/
+tools/blender-mcp/
