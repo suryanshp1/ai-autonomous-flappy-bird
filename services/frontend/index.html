@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+    <title>3D Flappy Bird | Laya System 1 AI Autonomous Pilot</title>
+    <meta name="description" content="Autonomous 3D Flappy Bird powered by Laya sub-40ms System 1 Decision Engine, Control Barrier Function (CBF) safety envelope, Three.js, and NestJS WebSocket bridge." />
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;600;700&family=JetBrains+Mono:wght@400;500;700&family=Outfit:wght@400;600;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/src/style.css" />
+  </head>
+  <body>
+    <!-- Three.js Canvas Container -->
+    <div id="canvas-container"></div>
+
+    <!-- HUD Overlay -->
+    <div id="hud-overlay" class="hud-container">
+      <!-- Top Bar: Brand, Scores & Tactical Controls -->
+      <header class="hud-header">
+        <div class="brand-badge">
+          <div class="pulse-dot"></div>
+          <div class="brand-text">
+            <span class="brand-title">FLAPPY-LAYA 3D</span>
+            <span class="brand-sub">SYSTEM 1 + CBF NEURAL PILOT</span>
+          </div>
+        </div>
+
+        <div class="score-display">
+          <div class="score-card">
+            <span class="score-label">SCORE</span>
+            <span id="current-score" class="score-value">0</span>
+          </div>
+          <div class="score-card combo-card">
+            <span class="score-label">STREAK</span>
+            <span id="combo-multiplier" class="score-value combo-val">x1</span>
+          </div>
+          <div class="score-card high-score-card">
+            <span class="score-label">AI BEST</span>
+            <span id="high-score" class="score-value">0</span>
+          </div>
+          <div class="score-card manual-score-card">
+            <span class="score-label">PILOT BEST</span>
+            <span id="manual-high-score" class="score-value">0</span>
+          </div>
+        </div>
+
+        <div class="mode-control">
+          <button id="camera-mode-btn" class="hud-pill-btn" title="Cycle Camera View (Press C)">
+            <span id="camera-mode-text">ISO CAM</span>
+          </button>
+          <button id="sim-speed-btn" class="hud-pill-btn" title="Cycle Time Scale (Press V)">
+            <span id="sim-speed-text">1.0x</span>
+          </button>
+          <button id="audio-toggle-btn" class="hud-pill-btn" title="Toggle Procedural Synth Audio (Press S)">
+            <span id="audio-toggle-text">SFX ON</span>
+          </button>
+          <button id="toggle-mode-btn" class="mode-toggle-btn ai-active" title="Toggle Manual vs AI Mode (Press M)">
+            <span class="mode-indicator"></span>
+            <span id="mode-text" class="mode-text">AI AUTONOMOUS</span>
+          </button>
+        </div>
+      </header>
+
+      <!-- Floating Tactical Event Toast -->
+      <div id="event-toast" class="event-toast hidden">
+        <span id="event-toast-text">+2 PLASMA CORE COLLECTED</span>
+      </div>
+
+      <!-- Center Hazard Banner (Appears on critical danger) -->
+      <div id="hazard-banner" class="hazard-banner hidden">
+        <div class="hazard-icon">⚠️</div>
+        <div class="hazard-content">
+          <span class="hazard-title">CRITICAL HAZARD DETECTED</span>
+          <span class="hazard-desc">IMMINENT COLLISION / EMERGENCY CBF FLAP OVERRIDE</span>
+        </div>
+      </div>
+
+      <!-- Game Over Banner -->
+      <div id="game-over-modal" class="modal-overlay hidden">
+        <div class="glass-card modal-card">
+          <h2 class="modal-title">IMPACT DETECTED</h2>
+          <div class="modal-stats">
+            <div class="modal-stat">
+              <span>Final Score</span>
+              <strong id="modal-final-score">0</strong>
+            </div>
+            <div class="modal-stat">
+              <span>Best Record</span>
+              <strong id="modal-best-score">0</strong>
+            </div>
+            <div class="modal-stat">
+              <span>Plasma Cores</span>
+              <strong id="modal-orbs-count">0</strong>
+            </div>
+            <div class="modal-stat">
+              <span>AI Decisions</span>
+              <strong id="modal-ai-decisions">0</strong>
+            </div>
+          </div>
+          <div class="modal-actions">
+            <button id="restart-btn" class="btn btn-primary">RESTART MISSION (SPACE)</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Start Overlay (when waiting to start) -->
+      <div id="start-overlay" class="start-overlay">
+        <div class="glass-card start-card">
+          <h1 class="start-title">CYBER FLAPPER 3D</h1>
+          <p class="start-subtitle">Sub-40ms Laya System 1 Neural Autopilot + Control Barrier Envelope</p>
+          <div class="controls-guide">
+            <div class="control-row">
+              <kbd class="key-badge">SPACE</kbd> / <kbd class="key-badge">CLICK</kbd>
+              <span>Flap thrusters (Manual mode) / Engage</span>
+            </div>
+            <div class="control-row">
+              <kbd class="key-badge">M</kbd>
+              <span>Toggle AI Autonomous / Manual Pilot</span>
+            </div>
+            <div class="control-row">
+              <kbd class="key-badge">C</kbd>
+              <span>Cycle 3D Camera (Iso / Chase / Cockpit FPV)</span>
+            </div>
+            <div class="control-row">
+              <kbd class="key-badge">V</kbd>
+              <span>Cycle Simulation Time-Scale (1x / 1.5x / 2x)</span>
+            </div>
+            <div class="control-row">
+              <kbd class="key-badge">T</kbd> / <kbd class="key-badge">S</kbd> / <kbd class="key-badge">R</kbd>
+              <span>Trajectory Line / Synth Audio / Instant Restart</span>
+            </div>
+          </div>
+          <button id="launch-btn" class="btn btn-primary btn-glow">ENGAGE ENGINES</button>
+        </div>
+      </div>
+
+      <!-- Bottom Layout: Telemetry HUD Panels -->
+      <footer class="hud-footer">
+        <!-- Panel 1: AI Decision Intelligence -->
+        <div class="telemetry-panel glass-panel ai-panel">
+          <div class="panel-header">
+            <span class="panel-tag">DECISION ENGINE</span>
+            <span id="decision-source-badge" class="source-badge laya">LAYA SYSTEM 1</span>
+          </div>
+
+          <div class="ai-core-metrics">
+            <!-- Confidence Meter -->
+            <div class="confidence-gauge">
+              <svg viewBox="0 0 100 100" class="gauge-svg">
+                <circle class="gauge-bg" cx="50" cy="50" r="42"></circle>
+                <circle id="confidence-circle" class="gauge-fill" cx="50" cy="50" r="42"></circle>
+              </svg>
+              <div class="gauge-text">
+                <span id="confidence-val" class="gauge-number">95%</span>
+                <span class="gauge-sub">CONF</span>
+              </div>
+            </div>
+
+            <!-- Action & Probability Split -->
+            <div class="action-distribution">
+              <div class="action-status">
+                <span class="status-label">ACTION</span>
+                <span id="current-action-text" class="status-action flap-glow">FLAP</span>
+                <span id="cbf-shield-badge" class="cbf-badge">CBF ARMED</span>
+              </div>
+              <div class="prob-bar-container">
+                <div class="prob-labels">
+                  <span>FLAP: <strong id="flap-prob-text">85%</strong></span>
+                  <span>GLIDE: <strong id="glide-prob-text">15%</strong></span>
+                </div>
+                <div class="prob-track">
+                  <div id="flap-bar" class="prob-fill flap-fill" style="width: 85%;"></div>
+                  <div id="glide-bar" class="prob-fill glide-fill" style="width: 15%;"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Latency Gauge & Dead Reckoning -->
+          <div class="panel-row latency-row">
+            <div class="tele-item">
+              <span class="tele-lbl">INFERENCE</span>
+              <span id="inference-latency-val" class="tele-val highlight-green">18.4 ms</span>
+            </div>
+            <div class="tele-item">
+              <span class="tele-lbl">DEAD-RECKONING</span>
+              <span id="dead-reckoning-val" class="tele-val">Δt +38ms</span>
+            </div>
+            <div class="tele-item">
+              <span class="tele-lbl">WORLD SPEED</span>
+              <span id="world-speed-val" class="tele-val">3.6 m/s</span>
+            </div>
+            <div class="tele-item">
+              <span class="tele-lbl">HAZARD PROB</span>
+              <span id="hazard-prob-val" class="tele-val">0.04</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Panel 2: Live Flight Kinematics -->
+        <div class="telemetry-panel glass-panel flight-panel">
+          <div class="panel-header">
+            <span class="panel-tag">SPATIAL TELEMETRY</span>
+            <div class="conn-meta">
+              <span id="fps-badge" class="fps-badge">60 FPS</span>
+              <span id="connection-status-badge" class="conn-badge online">ONLINE (WS)</span>
+            </div>
+          </div>
+
+          <div class="kinematic-grid">
+            <div class="tele-box">
+              <span class="tele-lbl">ALTITUDE (Y)</span>
+              <span id="tele-altitude" class="tele-num">5.00 m</span>
+            </div>
+            <div class="tele-box">
+              <span class="tele-lbl">V-VELOCITY</span>
+              <span id="tele-velocity" class="tele-num">0.00 m/s</span>
+            </div>
+            <div class="tele-box">
+              <span class="tele-lbl">DIST TO GAP</span>
+              <span id="tele-distance" class="tele-num">8.00 m</span>
+            </div>
+            <div class="tele-box">
+              <span class="tele-lbl">GAP CENTER</span>
+              <span id="tele-gap-center" class="tele-num">5.00 m</span>
+            </div>
+          </div>
+
+          <!-- Real-Time Sparkline Canvas -->
+          <div class="sparkline-wrapper">
+            <span class="sparkline-title">ALTITUDE TRACE & SAFE CLEARANCE ENVELOPE</span>
+            <canvas id="telemetry-graph-canvas" width="320" height="48"></canvas>
+          </div>
+        </div>
+      </footer>
+    </div>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
